@@ -1,0 +1,8 @@
+*.json
+.DS_Store
+*.key
+
+# environments
+.env/
+.venv/
+env/

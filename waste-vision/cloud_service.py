@@ -1,4 +1,6 @@
 import googleapiclient.discovery
+from google.api_core.client_options import ClientOptions
+
 
 def predict_json(project, region, model, instances, version=None):
     """Send json data to a deployed model for prediction.
@@ -29,12 +31,28 @@ def predict_json(project, region, model, instances, version=None):
     if version is not None:
         name += '/versions/{}'.format(version)
 
+    instances_list = instances.numpy().tolist()  # turn input into list (ML Engine wants JSON
     response = service.projects().predict(
         name=name,
-        body={'instances': instances}
+        body={'instances': instances_list}
     ).execute()
 
     if 'error' in response:
         raise RuntimeError(response['error'])
 
     return response['predictions']
+
+def update_logger(image, model_used, pred_class, pred_conf, correct=False, user_label=None):
+    """
+    Function for tracking feedback given in app, updates and reutrns
+    logger dictionary.
+    """
+    logger = {
+        "image": image,
+        "model_used": model_used,
+        "pred_class": pred_class,
+        "pred_conf": pred_conf,
+        "correct": correct,
+        "user_label": user_label
+    }
+    return logger

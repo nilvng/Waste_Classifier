@@ -2,8 +2,7 @@ import streamlit as st
 import SessionState
 import os
 import tensorflow as tf
-from utils import load_and_prep_image, update_logger
-from cloud_service import predict_json
+from cloud_service import predict_json, update_logger
 
 CLASSES = ['battery',
            'brown-glass',
@@ -24,7 +23,21 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "waste-classifier-312002-cb19c854
 PROJECT = "waste-classifier-312002"
 REGION = "asia-east1"
 MODEL = "sepm_waste_vision"
-
+def load_and_prep_image(filename, img_shape=299, rescale=False):
+  """
+  Reads in an image from filename, turns it into a tensor and reshapes into
+  (299, 299, 3).
+  """
+  # Decode it into a tensor
+#   img = tf.io.decode_image(filename) # no channels=3 means model will break for some PNG's (4 channels)
+  img = tf.io.decode_image(filename, channels=3) # make sure there's 3 colour channels (for PNG's)
+  # Resize the image
+  img = tf.image.resize(img, [img_shape, img_shape])
+  # Rescale the image (get all values between 0 and 1)
+  if rescale:
+      return img/255.
+  else:
+      return img
 @st.cache
 def make_prediction(image, model, class_names):
     """
